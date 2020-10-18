@@ -3,42 +3,36 @@ package ru.den.free.neuronet3.net.criptonet
 
 import kotlin.math.abs
 
-open class CriptoNet(private val width : Int, private val height : Int) {
+open class CriptoNet(private val length : Int) {
 
     class Neuron {
 
         var name       = ""
-        var weights    : Array<Array<Double>>? = null
+        var weights    : Array<Double>? = null
         var trainCount : Int = 0
 
-        fun clear(name : String, x : Int, y : Int)
+        fun clear(name : String, length : Int)
         {
             this.name = name
             trainCount = 0
-            weights = Array(y){ Array(x) {0.0} }
+            weights = Array(length){ 0.0 }
         }
 
-        fun detect(data : Array<Array<Double>>) : Double{
+        fun detect(data : Array<Double>) : Double{
             var res = 0.0
-            for (yPos in weights!!.indices) {
-                for (xPos in weights!![yPos].indices) {
-                    res += 1 - abs(weights!![yPos][xPos] - data[yPos][xPos])
-                }
+            for (pos in weights!!.indices) {
+                res += 1 - abs(weights!![pos] - data[pos])
             }
-            return res / (weights!!.size * weights!![0].size)
+            return res / weights!!.size
         }
 
-        fun train(data : Array<Array<Double>>) : Int
+        fun train(data : Array<Double>) : Int
         {
             trainCount++
-            for (yPos in weights!!.indices) {
-                for (xPos in weights!![yPos].indices) {
-                    val v = if (data[yPos][xPos] == 0.0) 0 else 1
-                    val arr = weights!![yPos]
-                    arr[xPos] = arr[xPos] + 2 * (v - 0.5f) / trainCount
-                    if (weights!![yPos][xPos] > 1) weights!![yPos][xPos] = 1.0
-                    if (weights!![yPos][xPos] < 0) weights!![yPos][xPos] = 0.0
-                }
+            for (pos in weights!!.indices) {
+                weights!![pos] = weights!![pos] + 2 * (data[pos] - 0.5f) / trainCount
+                if (weights!![pos] > 1) weights!![pos] = 1.0
+                if (weights!![pos] < 0) weights!![pos] = 0.0
             }
             return trainCount
         }
@@ -47,7 +41,7 @@ open class CriptoNet(private val width : Int, private val height : Int) {
 
     private var neurons  = ArrayList<Neuron>() // массив нейронов
 
-    protected fun detect(data : Array<Array<Double>>) : String?
+    protected fun detect(data : Array<Double>) : String?
     {
         var res : String? = null
         var max = 0.0
@@ -68,16 +62,16 @@ open class CriptoNet(private val width : Int, private val height : Int) {
         return null
     }
 
-    protected fun train(trainingName : String, data : Array<Array<Double>>) : String
+    protected fun train(trainingName : String, data : Array<Double>) : String
     {
         var neuron = findByName(trainingName)
         if (neuron == null)
         {
             neuron = Neuron()
-            neuron.clear(trainingName, width, height);
-            neurons!!.add(neuron)
+            neuron.clear(trainingName, length)
+            neurons.add(neuron)
         }
-        val trainCount = neuron!!.train(data) // обучим нейрон новому образу
+        val trainCount = neuron.train(data)
         return "Имя образа - " + neuron.name +
                  " вариантов образа в памяти - " + trainCount.toString()
     }

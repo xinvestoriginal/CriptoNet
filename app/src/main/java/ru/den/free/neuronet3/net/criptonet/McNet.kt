@@ -1,18 +1,22 @@
 package ru.den.free.neuronet3.net.criptonet
 
-class McNet(width: Int, height: Int) : CriptoNet(width, height) {
+class McNet(width: Int, height: Int) : CriptoNet(width * height) {
 
-    fun detect(arr : Array<Array<Int>>) : String?{
-        val data = Array(arr.size){ i ->
-            Array(arr[i].size){ j -> if (arr[i][j] > 0) 1.0 else 0.0 /*arr[i][j] / 255.0*/}
+    private fun convertArray(arr : Array<Array<Int>>) : Array<Double>{
+        val data = Array(arr.size * arr[0].size){ 0.0 }
+        for (y in arr.indices){
+            for (x in arr[0].indices){
+                val v = arr[y][x]
+                val pos = x + arr[0].size * y
+                data[pos] = if (v > 0) 1.0 else 0.0
+            }
         }
-        return super.detect(data)
+        return data
     }
 
-    fun train(trainingName : String,  arr : Array<Array<Int>>) : String{
-        val data = Array(arr.size){ i ->
-            Array(arr[i].size){ j -> if (arr[i][j] > 0) 1.0 else 0.0 /*arr[i][j] / 255.0*/}
-        }
-        return train(trainingName,data)
-    }
+    fun detect(arr : Array<Array<Int>>) = super.detect(convertArray(arr))
+
+    fun train(trainingName : String,
+              arr : Array<Array<Int>>) = super.train(trainingName,convertArray(arr))
+
 }
