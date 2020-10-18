@@ -121,7 +121,7 @@ class FingerLine constructor(context: Context?, attrs: AttributeSet? = null):Vie
             val rect = getPath(bitmap)
             bitmap = Bitmap.createBitmap(bitmap, rect.left, rect.top, rect.width(), rect.height())
             val size = max(bitmap.width, bitmap.height)
-            var bitmap2 = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
+            val bitmap2 = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
             c = Canvas(bitmap2)
             c.drawColor(Color.BLACK)
             c.drawBitmap(bitmap, (size - bitmap.width) / 2f, (size - bitmap.height) / 2f, mPaint)

@@ -8,8 +8,8 @@ open class CriptoNet(private val length : Int) {
     class Neuron {
 
         var name       = ""
-        var weights    : Array<Double>? = null
-        var trainCount : Int = 0
+        private var weights    : Array<Double>? = null
+        private var trainCount : Int = 0
 
         fun clear(name : String, length : Int)
         {

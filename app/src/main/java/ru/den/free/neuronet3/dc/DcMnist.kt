@@ -56,7 +56,7 @@ class DcMnist {
         fun exec() : McNet {
             var mnistMatrix = MnistDataReader().readData("data/train-images.idx3-ubyte","data/train-labels.idx1-ubyte")
             printMnistMatrix(mnistMatrix[mnistMatrix.size - 1]!!)
-            var map = toMap(mnistMatrix)
+            val map = toMap(mnistMatrix)
             val net = McNet(28,28)
             val trainStartTime = System.currentTimeMillis()
             for (l in map.keys){
