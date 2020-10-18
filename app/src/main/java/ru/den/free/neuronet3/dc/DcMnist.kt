@@ -6,13 +6,13 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import ru.den.free.neuronet3.mnist.MnistDataReader
 import ru.den.free.neuronet3.mnist.MnistMatrix
-import ru.den.free.neuronet3.net.criptonet.McNet
+import ru.den.free.neuronet3.net.criptonet.CriptoNet
 import java.io.IOException
 
 class DcMnist {
 
     interface IMnistLoader{
-        fun onMnist(net : McNet)
+        fun onMnist(net : CriptoNet)
     }
 
     interface IMnistDetect{
@@ -21,9 +21,21 @@ class DcMnist {
 
     companion object{
 
-        fun asyncMnistDetect(net : McNet, img: Array<Array<Int>>, listener : IMnistDetect){
+        private fun toCriptoInput(arr : Array<Array<Int>>) : Array<Double>{
+            val data = Array(arr.size * arr[0].size){ 0.0 }
+            for (y in arr.indices){
+                for (x in arr[0].indices){
+                    val v = arr[y][x]
+                    val pos = x + arr[0].size * y
+                    data[pos] = if (v > 0) 1.0 else 0.0
+                }
+            }
+            return data
+        }
+
+        fun asyncMnistDetect(net : CriptoNet, img: Array<Array<Int>>, listener : IMnistDetect){
             GlobalScope.launch(Dispatchers.IO) {
-                val res = net.detect(img)
+                val res = net.detect(toCriptoInput(img))
                 launch(Dispatchers.Main) {
                     listener.onDetectResult(res)
                 }
@@ -53,30 +65,30 @@ class DcMnist {
         }
 
         @Throws(IOException::class)
-        fun exec() : McNet {
-            var mnistMatrix = MnistDataReader().readData("data/train-images.idx3-ubyte","data/train-labels.idx1-ubyte")
-            printMnistMatrix(mnistMatrix[mnistMatrix.size - 1]!!)
-            val map = toMap(mnistMatrix)
-            val net = McNet(28,28)
+        fun exec() : CriptoNet {
+            var mnistMatrixList = MnistDataReader().readData("data/train-images.idx3-ubyte","data/train-labels.idx1-ubyte")
+            printMnistMatrix(mnistMatrixList[mnistMatrixList.size - 1]!!)
+            val map = toMap(mnistMatrixList)
+            val net = CriptoNet(28 * 28)
             val trainStartTime = System.currentTimeMillis()
             for (l in map.keys){
                 val list = map[l]!!
                 for (data in list){
-                    net.train(l,data)
+                    net.train(l, toCriptoInput(data))
                 }
             }
             val trainTime = System.currentTimeMillis() - trainStartTime
-            mnistMatrix = MnistDataReader().readData("data/t10k-images.idx3-ubyte", "data/t10k-labels.idx1-ubyte")
+            mnistMatrixList = MnistDataReader().readData("data/t10k-images.idx3-ubyte", "data/t10k-labels.idx1-ubyte")
             var rightCount = 0
             val checkStartTime = System.currentTimeMillis()
-            for (m in mnistMatrix){
-                val l = net.detect(m!!.data)
+            for (m in mnistMatrixList){
+                val l = net.detect(toCriptoInput(m!!.data))
                 if (l != null && l == m.label.toString()) rightCount++
             }
-            val detectTime = (System.currentTimeMillis() - checkStartTime) / mnistMatrix.size.toFloat()
-            printMnistMatrix(mnistMatrix[0]!!)
+            val detectTime = (System.currentTimeMillis() - checkStartTime) / mnistMatrixList.size.toFloat()
+            printMnistMatrix(mnistMatrixList[0]!!)
             Log.e("!!!", "result: " +
-                    (100 * (rightCount.toDouble() / mnistMatrix.size)).toString() +
+                    (100 * (rightCount.toDouble() / mnistMatrixList.size)).toString() +
                     "   train time: " + trainTime + " detect time: " + detectTime)
             return net
         }

@@ -7,15 +7,15 @@ import android.view.View
 import android.widget.Toast
 import kotlinx.android.synthetic.main.activity_main.*
 import ru.den.free.neuronet3.R
-import ru.den.free.neuronet3.net.criptonet.McNet
 import ru.den.free.neuronet3.dc.DcMnist
+import ru.den.free.neuronet3.net.criptonet.CriptoNet
 import ru.den.free.neuronet3.view.custom.FingerLine
 
 
 class MainActivity : AppCompatActivity(), DcMnist.IMnistLoader, FingerLine.IFingerLine,
     DcMnist.IMnistDetect {
 
-    private var net : McNet? = null
+    private var net : CriptoNet? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,7 +28,7 @@ class MainActivity : AppCompatActivity(), DcMnist.IMnistLoader, FingerLine.IFing
         
     }
 
-    override fun onMnist(net: McNet) {
+    override fun onMnist(net: CriptoNet) {
         pbMain.visibility = View.GONE
         flMain.visibility = View.VISIBLE
         this.net = net

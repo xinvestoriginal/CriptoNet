@@ -1,76 +1,52 @@
 package ru.den.free.neuronet3.net.criptonet
 
 
-import kotlin.math.abs
-
 open class CriptoNet(private val length : Int) {
 
-    class Neuron {
+    //result: 76.19   train time: 19251 detect time: 0.4315
+    //result: 76.19   train time: 18715 detect time: 0.4394
+    //result: 76.19   train time: 20597 detect time: 0.4407
+    //result: 76.19   train time: 21508 detect time: 0.4491
+    //result: 76.19   train time: 17682 detect time: 0.3585
 
-        var name       = ""
-        private var weights    : Array<Double>? = null
-        private var trainCount : Int = 0
-
-        fun clear(name : String, length : Int)
-        {
-            this.name = name
-            trainCount = 0
-            weights = Array(length){ 0.0 }
-        }
-
-        fun detect(data : Array<Double>) : Double{
-            var res = 0.0
-            for (pos in weights!!.indices) {
-                res += 1 - abs(weights!![pos] - data[pos])
+    companion object{
+        fun maxCorrect(list : ArrayList<CriptoNeuron>, data : Array<Double>) : CriptoNeuron {
+            assert(list.isNotEmpty())
+            var res = list[0]
+            var max = 0.0
+            for (n in list){
+                val d = n.detect(data)
+                if (d > max)
+                {
+                    max = d
+                    res = n
+                }
             }
-            return res / weights!!.size
+            return res
         }
 
-        fun train(data : Array<Double>) : Int
-        {
-            trainCount++
-            for (pos in weights!!.indices) {
-                weights!![pos] = weights!![pos] + 2 * (data[pos] - 0.5f) / trainCount
-                if (weights!![pos] > 1) weights!![pos] = 1.0
-                if (weights!![pos] < 0) weights!![pos] = 0.0
-            }
-            return trainCount
+        fun toList(map : HashMap<String,ArrayList<CriptoNeuron>>) : ArrayList<CriptoNeuron> {
+            val res = ArrayList<CriptoNeuron>()
+            for (v in map.values) res.addAll(v)
+            return res
         }
-
     }
 
-    private var neurons  = ArrayList<Neuron>() // массив нейронов
+    private var nMap  = HashMap<String,ArrayList<CriptoNeuron>>()
 
-    protected fun detect(data : Array<Double>) : String?
+    fun detect(data : Array<Double>) : String? = maxCorrect(toList(nMap),data).name
+
+    fun train(trainingName : String, data : Array<Double>) : String
     {
-        var res : String? = null
-        var max = 0.0
-        for (n in neurons)
-        {
-            val d = n.detect(data)
-            if (d > max)
-            {
-                max = d
-                res = n.name
-            }
+        if (!nMap.containsKey(trainingName)){
+            nMap[trainingName] = ArrayList()
         }
-        return res
-    }
-
-    private fun findByName(name : String) : Neuron?{
-        for (n in neurons) if (n.name == name) return n
-        return null
-    }
-
-    protected fun train(trainingName : String, data : Array<Double>) : String
-    {
-        var neuron = findByName(trainingName)
-        if (neuron == null)
+        if (nMap[trainingName]!!.isEmpty())
         {
-            neuron = Neuron()
-            neuron.clear(trainingName, length)
-            neurons.add(neuron)
+            val neuron = CriptoNeuron(trainingName, length)
+            nMap[trainingName]!!.add(neuron)
         }
+        val neuron = maxCorrect(nMap[trainingName]!!,data)
         val trainCount = neuron.train(data)
         return "Имя образа - " + neuron.name +
                  " вариантов образа в памяти - " + trainCount.toString()
