@@ -17,7 +17,7 @@ class FingerLine constructor(context: Context?, attrs: AttributeSet? = null):Vie
 
     companion object{
         const val MNIST_IMAGE_SIZE  = 28
-        const val MNIST_IMAGE_MARGIN = 4
+        const val MNIST_IMAGE_MARGIN = 3
     }
 
     interface IFingerLine{
@@ -39,7 +39,7 @@ class FingerLine constructor(context: Context?, attrs: AttributeSet? = null):Vie
                 } else {
                     viewTreeObserver.removeGlobalOnLayoutListener(this)
                 }
-                mPaint.strokeWidth = width / 8f
+                mPaint.strokeWidth = width / 12f
             }
         })
     }
