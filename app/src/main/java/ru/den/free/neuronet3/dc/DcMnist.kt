@@ -7,12 +7,13 @@ import kotlinx.coroutines.launch
 import ru.den.free.neuronet3.mnist.MnistDataReader
 import ru.den.free.neuronet3.mnist.MnistMatrix
 import ru.den.free.neuronet3.net.criptonet.CriptoNet
+import ru.den.free.neuronet3.net.ecliptic.Ecliptic
 import java.io.IOException
 
 class DcMnist {
 
     interface IMnistLoader{
-        fun onMnist(net : CriptoNet)
+        fun onMnist(net : Ecliptic)
     }
 
     interface IMnistDetect{
@@ -21,7 +22,7 @@ class DcMnist {
 
     companion object{
 
-        fun asyncMnistDetect(net : CriptoNet, img: Array<Array<Int>>, listener : IMnistDetect){
+        fun asyncMnistDetect(net : Ecliptic, img: Array<Array<Int>>, listener : IMnistDetect){
             GlobalScope.launch(Dispatchers.IO) {
 
                 val res = net.detect(toCriptoInput(img))
@@ -85,13 +86,13 @@ class DcMnist {
         }
 
         @Throws(IOException::class)
-        private fun exec() : CriptoNet {
+        private fun exec() : Ecliptic {
             var mnistMatrixList = MnistDataReader().readData(
                 "data/train-images.idx3-ubyte","data/train-labels.idx1-ubyte")
             var matrix = mnistMatrixList[mnistMatrixList.size - 1]!!
             printMnistMatrix(matrix.label.toString(),matrix.data)
             val map = toMap(mnistMatrixList)
-            val net = CriptoNet(28 * 28)
+            val net = Ecliptic(28 * 28)
             val trainStartTime = System.currentTimeMillis()
             for (l in map.keys){
                 val list = map[l]!!
